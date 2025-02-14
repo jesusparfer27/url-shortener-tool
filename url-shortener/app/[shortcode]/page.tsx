@@ -1,7 +1,11 @@
-import prisma from "@/lib/db"; 
+import prisma from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
 
-export default async function RedirectPage({ params }: { params: { shortcode: string } }) {
+export async function generateStaticParams() {
+  return [];
+}
+
+export default async function RedirectPage({ params }: Awaited<{ params: { shortcode: string } }>) {
   const { shortcode } = params;
 
   const url = await prisma.url.findFirst({
