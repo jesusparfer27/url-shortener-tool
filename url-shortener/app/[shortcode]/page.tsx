@@ -5,21 +5,38 @@ export async function generateStaticParams() {
   return [];
 }
 
-export default async function RedirectPage({ params }: Awaited<{ params: { shortcode: string } }>) {
-  const { shortcode } = params;
+interface RedirectPageProps {
+  params: { shortcode: string };
+}
 
-  const url = await prisma.url.findFirst({
-    where: { shortCode: shortcode },
-  });
+export default async function RedirectPage({ params }: RedirectPageProps) {
+  try {
+    const { shortcode } = params;
+    
+    if (!shortcode) {
+      notFound();
+      return;
+    }
 
-  if (!url) {
+    const url = await prisma.url.findUnique({
+      where: { shortCode: shortcode },
+    });
+
+    if (!url) {
+      notFound();
+      return;
+    }
+
+    await prisma.url.update({
+      where: { id: url.id },
+      data: { visits: { increment: 1 } },
+    });
+
+    redirect(url.originalUrl);
+  } catch (error) {
+    console.error("Error en RedirectPage:", error);
     notFound();
+  } finally {
+    await prisma.$disconnect(); // Cierra la conexión en caso de error
   }
-
-  await prisma.url.update({
-    where: { id: url.id },
-    data: { visits: { increment: 1 } },
-  });
-
-  redirect(url.originalUrl);
 }
