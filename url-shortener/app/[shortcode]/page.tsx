@@ -7,13 +7,17 @@ interface Props {
 }
 
 const RedirectPage = ({ originalUrl }: Props) => {
+  // Si no se encuentra la URL, mostrar el error 404
   if (!originalUrl) {
     return <div>404 - URL not found</div>;
   }
 
-  return <>{redirect(originalUrl)}</>;
+  // Este componente ya no necesita hacer la redirección,
+  // ya que la redirección ahora se maneja en getServerSideProps
+  return <div>Redirecting...</div>;
 };
 
+// Este método maneja la lógica de redirección antes de renderizar el componente
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const { shortcode } = params as { shortcode: string };
 
@@ -21,6 +25,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     where: { shortCode: shortcode },
   });
 
+  // Si no se encuentra el shortcode, mostrar una página de error
   if (!url) {
     return { props: { originalUrl: null } };
   }
@@ -31,7 +36,13 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     data: { visits: { increment: 1 } },
   });
 
-  return { props: { originalUrl: url.originalUrl } };
+  // Redirigir en el servidor a la URL original
+  return {
+    redirect: {
+      destination: url.originalUrl,
+      permanent: false,
+    },
+  };
 };
 
 export default RedirectPage;
