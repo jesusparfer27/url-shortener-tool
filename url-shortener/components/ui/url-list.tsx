@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react'
 import { Check } from 'lucide-react'
 
 type Url = {
-    id: string;
+    id: string; 
     shortCode: string;
     originUrl: string;
     visits: number;
