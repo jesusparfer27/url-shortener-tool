@@ -1,30 +1,37 @@
 import prisma from "@/lib/db";
+import { GetServerSideProps } from "next";
 import { redirect } from "next/navigation";
 
-// Usar el tipo adecuado para los parámetros de la ruta dinámica
-interface RedirectPageProps {
-  params: { shortcode: string };
+interface Props {
+  originalUrl: string | null;
 }
 
-export default async function RedirectPage({ params }: RedirectPageProps) {
-  const { shortcode } = params;
+const RedirectPage = ({ originalUrl }: Props) => {
+  if (!originalUrl) {
+    return <div>404 - URL not found</div>;
+  }
 
-  // Buscar el URL correspondiente
+  return <>{redirect(originalUrl)}</>;
+};
+
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+  const { shortcode } = params as { shortcode: string };
+
   const url = await prisma.url.findFirst({
     where: { shortCode: shortcode },
   });
 
   if (!url) {
-    // Si no se encuentra la URL, redirigir a una página 404
-    redirect("/404"); 
+    return { props: { originalUrl: null } };
   }
 
-  // Incrementar las visitas
+  // Incrementar visitas
   await prisma.url.update({
     where: { id: url.id },
     data: { visits: { increment: 1 } },
   });
 
-  // Redirigir al usuario a la URL original
-  redirect(url.originalUrl);
-}
+  return { props: { originalUrl: url.originalUrl } };
+};
+
+export default RedirectPage;
