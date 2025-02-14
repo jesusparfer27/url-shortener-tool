@@ -2,27 +2,28 @@ import prisma from "@/lib/db";
 import { redirect } from "next/navigation";
 
 interface RedirectPageProps {
- params: { shortcode: string }
+  params: { shortcode: string };
 }
 
 export default async function RedirectPage({ params }: RedirectPageProps) {
-    const { shortcode } = params;
+  const { shortcode } = params;
 
-    // 🔹 Usar findFirst() en lugar de findUnique()
-    const url = await prisma.url.findFirst({
-        where: { shortCode: shortcode }
-    });
+  // Usar findFirst() en lugar de findUnique()
+  const url = await prisma.url.findFirst({
+    where: { shortCode: shortcode },
+  });
 
-    if (!url) {
-        return <div>404 - URL not found</div>;
-    }
+  if (!url) {
+    // Si no se encuentra la URL, redirige a una página de error personalizada o muestra un 404
+    redirect("/404"); // Cambia a la ruta que desees
+  }
 
-    // 🔹 Incrementar visitas
-    await prisma.url.update({
-        where: { id: url.id },
-        data: { visits: { increment: 1 } }
-    });
+  // Incrementar visitas
+  await prisma.url.update({
+    where: { id: url.id },
+    data: { visits: { increment: 1 } },
+  });
 
-    // 🔹 Redirigir correctamente
-    redirect(url.originalUrl);
+  // Redirigir a la URL original
+  redirect(url.originalUrl);
 }
