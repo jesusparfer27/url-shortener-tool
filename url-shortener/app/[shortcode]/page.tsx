@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import prisma from "@/lib/db"; // ✅ Importación correcta para exportación por defecto
 import { notFound } from "next/navigation";
 
 interface RedirectPageProps {
