@@ -1,10 +1,6 @@
 import prisma from "@/lib/db";
 import { redirect } from "next/navigation";
 
-interface Props {
-  originalUrl: string | null;
-}
-
 const RedirectPage = async ({ params }: { params: { shortcode: string } }) => {
   // Buscar la URL en la base de datos
   const url = await prisma.url.findFirst({
