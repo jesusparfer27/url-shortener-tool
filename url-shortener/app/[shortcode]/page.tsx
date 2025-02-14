@@ -1,15 +1,21 @@
-import prisma from "@/lib/db";
-import { redirect } from "next/navigation";
+import { prisma } from "@/lib/db";
+import { notFound } from "next/navigation";
 
-const RedirectPage = async ({ params }: { params: { shortcode: string } }) => {
-  // Buscar la URL en la base de datos
+interface RedirectPageProps {
+  params: { shortcode: string };
+}
+
+export default async function RedirectPage({ params }: RedirectPageProps) {
+  const { shortcode } = params;
+
+  // Buscar URL en la base de datos
   const url = await prisma.url.findFirst({
-    where: { shortCode: params.shortcode },
+    where: { shortCode: shortcode },
   });
 
-  // Si no se encuentra el shortcode, retornar un mensaje de error
+  // Si no se encuentra el shortcode, mostrar 404
   if (!url) {
-    return <div>404 - URL not found</div>;
+    notFound();  // Muestra la página 404 automáticamente
   }
 
   // Incrementar visitas
@@ -18,8 +24,6 @@ const RedirectPage = async ({ params }: { params: { shortcode: string } }) => {
     data: { visits: { increment: 1 } },
   });
 
-  // Redirigir a la URL original
-  redirect(url.originalUrl); // Redirigir al destino original
-};
-
-export default RedirectPage;
+  // Redirigir al usuario a la URL original
+  return <>{redirect(url.originalUrl)}</>;
+}
