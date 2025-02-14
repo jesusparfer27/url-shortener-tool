@@ -1,6 +1,7 @@
 import prisma from "@/lib/db";
 import { redirect } from "next/navigation";
 
+// Usar el tipo adecuado para los parámetros de la ruta dinámica
 interface RedirectPageProps {
   params: { shortcode: string };
 }
@@ -8,22 +9,22 @@ interface RedirectPageProps {
 export default async function RedirectPage({ params }: RedirectPageProps) {
   const { shortcode } = params;
 
-  // Usar findFirst() en lugar de findUnique()
+  // Buscar el URL correspondiente
   const url = await prisma.url.findFirst({
     where: { shortCode: shortcode },
   });
 
   if (!url) {
-    // Si no se encuentra la URL, redirige a una página de error personalizada o muestra un 404
-    redirect("/404"); // Cambia a la ruta que desees
+    // Si no se encuentra la URL, redirigir a una página 404
+    redirect("/404"); 
   }
 
-  // Incrementar visitas
+  // Incrementar las visitas
   await prisma.url.update({
     where: { id: url.id },
     data: { visits: { increment: 1 } },
   });
 
-  // Redirigir a la URL original
+  // Redirigir al usuario a la URL original
   redirect(url.originalUrl);
 }
